@@ -22,7 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Colors.grey.shade100,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -34,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF4A90D9),
+                    color: Colors.blue,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Icon(
@@ -44,12 +44,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   'MediTrack',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF2D3142),
+                    color: Colors.blueGrey.shade900,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -79,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFF4A90D9)),
+                      borderSide: const BorderSide(color: Colors.blue),
                     ),
                   ),
                 ),
@@ -103,7 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFF4A90D9)),
+                      borderSide: const BorderSide(color: Colors.blue),
                     ),
                   ),
                 ),
@@ -114,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: ElevatedButton(
                     onPressed: login,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4A90D9),
+                      backgroundColor: Colors.blue,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),

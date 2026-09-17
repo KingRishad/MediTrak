@@ -13,7 +13,7 @@ class MediTrack extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFFF5F5F5),
+        scaffoldBackgroundColor: Colors.grey.shade100,
         fontFamily: 'Roboto',
       ),
       home: const LoginScreen(),

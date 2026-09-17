@@ -85,10 +85,10 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF4A90D9) : Colors.white,
+              color: isSelected ? Colors.blue : Colors.white,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isSelected ? const Color(0xFF4A90D9) : Colors.grey[300]!,
+                color: isSelected ? Colors.blue : Colors.grey[300]!,
                 width: 1.5,
               ),
             ),
@@ -103,7 +103,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
             form,
             style: TextStyle(
               fontSize: 12,
-              color: isSelected ? const Color(0xFF4A90D9) : Colors.grey[600],
+              color: isSelected ? Colors.blue : Colors.grey[600],
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             ),
           ),
@@ -115,18 +115,18 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3142)),
+          icon: Icon(Icons.arrow_back, color: Colors.blueGrey.shade900),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Add Medicine',
           style: TextStyle(
-            color: Color(0xFF2D3142),
+            color: Colors.blueGrey.shade900,
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
@@ -157,14 +157,14 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                   borderSide: BorderSide(color: Colors.grey[300]!),
                 ),
                 focusedBorder: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFF4A90D9)),
+                  borderSide: BorderSide(color: Colors.blue),
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
               ),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF2D3142),
+                color: Colors.blueGrey.shade900,
               ),
             ),
             const SizedBox(height: 24),
@@ -206,7 +206,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                             value: selectedQuantity,
                             isExpanded: true,
                             icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey[500]),
-                            style: const TextStyle(fontSize: 16, color: Color(0xFF2D3142)),
+                            style: TextStyle(fontSize: 16, color: Colors.blueGrey.shade900),
                             items: List.generate(quantityOptions.length, (i) {
                               return DropdownMenuItem<String>(
                                 value: quantityOptions[i],
@@ -245,7 +245,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                             value: selectedDose,
                             isExpanded: true,
                             icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey[500]),
-                            style: const TextStyle(fontSize: 16, color: Color(0xFF2D3142)),
+                            style: TextStyle(fontSize: 16, color: Colors.blueGrey.shade900),
                             items: List.generate(doseOptions.length, (i) {
                               return DropdownMenuItem<String>(
                                 value: doseOptions[i],
@@ -283,7 +283,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                   value: selectedFrequency,
                   isExpanded: true,
                   icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey[500]),
-                  style: const TextStyle(fontSize: 16, color: Color(0xFF2D3142)),
+                  style: TextStyle(fontSize: 16, color: Colors.blueGrey.shade900),
                   items: List.generate(frequencyOptions.length, (i) {
                     return DropdownMenuItem<String>(
                       value: frequencyOptions[i],
@@ -322,7 +322,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                     const SizedBox(width: 10),
                     Text(
                       formatTime(selectedTime),
-                      style: const TextStyle(fontSize: 16, color: Color(0xFF2D3142)),
+                      style: TextStyle(fontSize: 16, color: Colors.blueGrey.shade900),
                     ),
                   ],
                 ),
@@ -336,7 +336,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
               child: ElevatedButton(
                 onPressed: saveMedicine,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4A90D9),
+                  backgroundColor: Colors.blue,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
                   ),

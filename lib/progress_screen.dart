@@ -33,12 +33,12 @@ class ProgressScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Progress',
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF2D3142),
+                color: Colors.blueGrey.shade900,
               ),
             ),
             const SizedBox(height: 8),
@@ -69,15 +69,15 @@ class ProgressScreen extends StatelessWidget {
                   const Icon(
                     Icons.trending_up,
                     size: 48,
-                    color: Color(0xFF4A90D9),
+                    color: Colors.blue,
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'Medication Adherence',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF2D3142),
+                      color: Colors.blueGrey.shade900,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -87,7 +87,7 @@ class ProgressScreen extends StatelessWidget {
                       value: progressValue,
                       minHeight: 12,
                       backgroundColor: Colors.grey[200],
-                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4A90D9)),
+                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -127,16 +127,16 @@ class ProgressScreen extends StatelessWidget {
                         children: [
                           Icon(
                             med.taken ? Icons.check_circle : Icons.circle_outlined,
-                            color: med.taken ? const Color(0xFF4CAF50) : Colors.grey[400],
+                            color: med.taken ? Colors.green : Colors.grey[400],
                             size: 24,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               med.name,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 15,
-                                color: Color(0xFF2D3142),
+                                color: Colors.blueGrey.shade900,
                               ),
                             ),
                           ),
@@ -144,7 +144,7 @@ class ProgressScreen extends StatelessWidget {
                             med.taken ? 'Taken' : 'Not taken',
                             style: TextStyle(
                               fontSize: 13,
-                              color: med.taken ? const Color(0xFF4CAF50) : Colors.grey[400],
+                              color: med.taken ? Colors.green : Colors.grey[400],
                             ),
                           ),
                         ],

@@ -19,12 +19,12 @@ class ProfileScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Profile',
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF2D3142),
+                color: Colors.blueGrey.shade900,
               ),
             ),
             const SizedBox(height: 8),
@@ -41,7 +41,7 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   const CircleAvatar(
                     radius: 45,
-                    backgroundColor: Color(0xFF4A90D9),
+                    backgroundColor: Colors.blue,
                     child: Text(
                       'R',
                       style: TextStyle(
@@ -54,10 +54,10 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 12),
                   Text(
                     name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF2D3142),
+                      color: Colors.blueGrey.shade900,
                     ),
                   ),
                 ],
@@ -97,10 +97,10 @@ class ProfileScreen extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: const Color(0xFF4A90D9).withValues(alpha: 0.15),
+              color: Colors.blue.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: const Color(0xFF4A90D9), size: 22),
+            child: Icon(icon, color: Colors.blue, size: 22),
           ),
           const SizedBox(width: 14),
           Column(
@@ -113,10 +113,10 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF2D3142),
+                  color: Colors.blueGrey.shade900,
                 ),
               ),
             ],

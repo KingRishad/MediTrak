@@ -51,7 +51,7 @@ class HomePageState extends State<HomePage> {
             });
           },
           backgroundColor: Colors.white,
-          selectedItemColor: const Color(0xFF4A90D9),
+          selectedItemColor: Colors.blue,
           unselectedItemColor: Colors.grey,
           elevation: 0,
           items: const [

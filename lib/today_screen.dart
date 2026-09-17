@@ -23,12 +23,12 @@ class _TodayScreenState extends State<TodayScreen> {
   }
 
   Color getFormColor(String form) {
-    if (form == 'Tablet') return const Color(0xFF4A90D9);
-    if (form == 'Capsule') return const Color(0xFFE57373);
-    if (form == 'Liquid') return const Color(0xFF81C784);
-    if (form == 'Lotion') return const Color(0xFFFFB74D);
-    if (form == 'Spray') return const Color(0xFF9575CD);
-    return const Color(0xFF4A90D9);
+    if (form == 'Tablet') return Colors.blue;
+    if (form == 'Capsule') return Colors.red.shade300;
+    if (form == 'Liquid') return Colors.green.shade300;
+    if (form == 'Lotion') return Colors.orange.shade300;
+    if (form == 'Spray') return Colors.deepPurple.shade300;
+    return Colors.blue;
   }
 
   void openAddMedicineScreen() async {
@@ -64,12 +64,12 @@ class _TodayScreenState extends State<TodayScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Today Medicine',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF2D3142),
+                    color: Colors.blueGrey.shade900,
                   ),
                 ),
                 Row(
@@ -101,7 +101,7 @@ class _TodayScreenState extends State<TodayScreen> {
                       dayNames[index],
                       style: TextStyle(
                         fontSize: 12,
-                        color: isToday ? const Color(0xFF4A90D9) : Colors.grey[500],
+                        color: isToday ? Colors.blue : Colors.grey[500],
                         fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),
@@ -110,7 +110,7 @@ class _TodayScreenState extends State<TodayScreen> {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: isToday ? const Color(0xFF4A90D9) : Colors.transparent,
+                        color: isToday ? Colors.blue : Colors.transparent,
                         borderRadius: BorderRadius.circular(18),
                       ),
                       child: Center(
@@ -119,7 +119,7 @@ class _TodayScreenState extends State<TodayScreen> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: isToday ? Colors.white : const Color(0xFF2D3142),
+                            color: isToday ? Colors.white : Colors.blueGrey.shade900,
                           ),
                         ),
                       ),
@@ -198,7 +198,7 @@ class _TodayScreenState extends State<TodayScreen> {
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF2D3142),
+                                        color: Colors.blueGrey.shade900,
                                         decoration: med.taken ? TextDecoration.lineThrough : TextDecoration.none,
                                       ),
                                     ),
@@ -226,7 +226,7 @@ class _TodayScreenState extends State<TodayScreen> {
                                 onTap: () => toggleTaken(index),
                                 child: Icon(
                                   med.taken ? Icons.check_circle : Icons.check_circle_outline,
-                                  color: med.taken ? const Color(0xFF4CAF50) : Colors.grey[400],
+                                  color: med.taken ? Colors.green : Colors.grey[400],
                                   size: 28,
                                 ),
                               ),
@@ -254,7 +254,7 @@ class _TodayScreenState extends State<TodayScreen> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4A90D9),
+                  backgroundColor: Colors.blue,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
                   ),
