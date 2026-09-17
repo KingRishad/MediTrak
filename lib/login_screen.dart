@@ -45,7 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'MediTrack',
+                  'MediTrak',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
