@@ -17,7 +17,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
   TimeOfDay selectedTime = const TimeOfDay(hour: 10, minute: 0);
 
   List<String> quantityOptions = ['1 pill', '2 pills', '3 pills', '4 pills', '5 pills'];
-  List<String> doseOptions = ['100 mg', '150 mg', '200 mg', '250 mg', '500 mg'];
+  List<String> doseOptions = ['100 mg', '150 mg', '200 mg', '250 mg', '500 mg', '1000 mg'];
   List<String> frequencyOptions = ['Everyday', 'Once a week', 'Twice a week', 'Every other day'];
 
   IconData getFormIcon(String form) {
