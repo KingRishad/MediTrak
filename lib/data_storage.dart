@@ -1,9 +1,19 @@
+import 'firebase_storage_service.dart';
 import 'local_storage_service.dart';
 import 'storage_service.dart';
 
 /// Central accessor for the active storage implementation.
-/// To switch to Firebase later, assign a Firebase implementation to [DataStorage.instance]:
-/// e.g. `DataStorage.instance = FirebaseStorageService();`
 class DataStorage {
   static StorageService instance = LocalStorageService();
+
+  /// Helper to check if the current storage service is Firebase
+  static bool get isFirebase => instance is FirebaseStorageService;
+
+  /// Helper to get [FirebaseStorageService] instance if active
+  static FirebaseStorageService? get firebaseInstance {
+    if (instance is FirebaseStorageService) {
+      return instance as FirebaseStorageService;
+    }
+    return null;
+  }
 }

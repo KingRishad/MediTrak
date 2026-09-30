@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'data_storage.dart';
 import 'home_page.dart';
+import 'user_profile.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -10,16 +11,83 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  var usernameController = TextEditingController();
-  var passwordController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  bool isSignUp = false;
+  bool isLoading = false;
 
-  void login() async {
-    await DataStorage.instance.setLoggedIn(true);
-    if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
-      );
+  Future<void> login() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final firebaseStorage = DataStorage.firebaseInstance;
+
+      if (firebaseStorage != null) {
+        if (email.isNotEmpty && password.isNotEmpty) {
+          if (isSignUp) {
+            await firebaseStorage.signUpWithEmail(email, password);
+          } else {
+            await firebaseStorage.signInWithEmail(email, password);
+          }
+        } else if (email.isNotEmpty && password.isEmpty) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Please enter your password.'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+          return;
+        } else {
+          // Sign in anonymously if email field is left blank
+          await firebaseStorage.signInAnonymously();
+        }
+      } else {
+        // Fallback local login
+        if (email.isNotEmpty) {
+          final existing = await DataStorage.instance.getUserProfile();
+          final updated = (existing ??
+                  UserProfile(
+                    uid: 'local_user',
+                    email: email,
+                    name: email.contains('@') ? email.split('@').first : email,
+                  ))
+              .copyWith(
+            email: email,
+            name: email.contains('@') ? email.split('@').first : email,
+          );
+          await DataStorage.instance.saveUserProfile(updated);
+        }
+        await DataStorage.instance.setLoggedIn(true);
+      }
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Authentication failed: ${e.toString().replaceAll(RegExp(r'\[.*?\]'), '').trim()}'),
+            backgroundColor: Colors.red.shade400,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -58,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Track your medications easily',
+                  isSignUp ? 'Create your account' : 'Track your medications easily',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[500],
@@ -66,11 +134,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 40),
                 TextField(
-                  controller: usernameController,
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
-                    hintText: 'Username',
+                    hintText: 'Email or Username',
                     hintStyle: TextStyle(color: Colors.grey[400]),
-                    prefixIcon: Icon(Icons.person_outline, color: Colors.grey[400]),
+                    prefixIcon: Icon(Icons.email_outlined, color: Colors.grey[400]),
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
@@ -116,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: login,
+                    onPressed: isLoading ? null : login,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       shape: RoundedRectangleBorder(
@@ -124,15 +193,49 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       elevation: 2,
                     ),
-                    child: const Text(
-                      'Login',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                    child: isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2.5,
+                            ),
+                          )
+                        : Text(
+                            isSignUp ? 'Sign Up' : 'Login',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      isSignUp ? 'Already have an account? ' : 'Don\'t have an account? ',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          isSignUp = !isSignUp;
+                        });
+                      },
+                      child: Text(
+                        isSignUp ? 'Login' : 'Sign Up',
+                        style: const TextStyle(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),

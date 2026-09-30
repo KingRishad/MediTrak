@@ -1,9 +1,21 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'data_storage.dart';
+import 'firebase_storage_service.dart';
 import 'home_page.dart';
 import 'login_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    await Firebase.initializeApp();
+    DataStorage.instance = FirebaseStorageService();
+  } catch (e) {
+    debugPrint('Firebase initialization info: $e');
+    // Fallback to LocalStorageService remains active if Firebase is not yet configured
+  }
+
   runApp(const MediTrack());
 }
 

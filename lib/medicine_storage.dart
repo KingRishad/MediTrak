@@ -1,5 +1,6 @@
 import 'data_storage.dart';
 import 'main.dart';
+import 'user_profile.dart';
 
 /// Legacy helper class that delegates calls to [DataStorage.instance].
 class MedicineStorage {
@@ -13,4 +14,10 @@ class MedicineStorage {
 
   static Future<void> saveMedicines(List<Medicine> medicines) =>
       DataStorage.instance.saveMedicines(medicines);
+
+  static Future<UserProfile?> getUserProfile() =>
+      DataStorage.instance.getUserProfile();
+
+  static Future<void> saveUserProfile(UserProfile profile) =>
+      DataStorage.instance.saveUserProfile(profile);
 }

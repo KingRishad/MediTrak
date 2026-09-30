@@ -3,12 +3,14 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'main.dart';
 import 'storage_service.dart';
+import 'user_profile.dart';
 
 /// SharedPreferences implementation of [StorageService].
 class LocalStorageService implements StorageService {
   static const String _keyMedicines = 'saved_medicines';
   static const String _keyLastDate = 'last_date';
   static const String _keyIsLoggedIn = 'is_logged_in';
+  static const String _keyUserProfile = 'user_profile';
 
   static String _getTodayString() {
     final now = DateTime.now();
@@ -25,6 +27,10 @@ class LocalStorageService implements StorageService {
   Future<void> setLoggedIn(bool loggedIn) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyIsLoggedIn, loggedIn);
+    if (!loggedIn) {
+      // Clear profile cache on logout
+      await prefs.remove(_keyUserProfile);
+    }
   }
 
   @override
@@ -70,5 +76,41 @@ class LocalStorageService implements StorageService {
 
     await prefs.setString(_keyMedicines, jsonString);
     await prefs.setString(_keyLastDate, today);
+  }
+
+  @override
+  Future<UserProfile?> getUserProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? jsonString = prefs.getString(_keyUserProfile);
+    if (jsonString == null || jsonString.isEmpty) {
+      return UserProfile(
+        uid: 'local_user',
+        email: 'local@meditrak.app',
+        name: 'Local User',
+        age: '24',
+        bloodGroup: 'B+',
+        height: '5\' 9"',
+        weight: '72 kg',
+        allergies: 'Penicillin, Dust',
+        emergencyContact: '+880 1712 345678',
+      );
+    }
+
+    try {
+      final Map<String, dynamic> jsonMap = jsonDecode(jsonString);
+      return UserProfile.fromJson(jsonMap, defaultUid: 'local_user', defaultEmail: 'local@meditrak.app');
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error parsing local user profile: $e');
+      }
+      return null;
+    }
+  }
+
+  @override
+  Future<void> saveUserProfile(UserProfile profile) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String jsonString = jsonEncode(profile.toJson());
+    await prefs.setString(_keyUserProfile, jsonString);
   }
 }
