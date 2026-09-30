@@ -1,0 +1,17 @@
+import 'main.dart';
+
+/// Abstract storage interface.
+/// Implement this interface to swap local storage with Firebase or any other backend.
+abstract class StorageService {
+  /// Check whether the user is logged in
+  Future<bool> isLoggedIn();
+
+  /// Set user login status
+  Future<void> setLoggedIn(bool loggedIn);
+
+  /// Load all stored medicines
+  Future<List<Medicine>> loadMedicines();
+
+  /// Save or update the list of medicines
+  Future<void> saveMedicines(List<Medicine> medicines);
+}

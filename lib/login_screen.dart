@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'data_storage.dart';
 import 'home_page.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -12,11 +13,14 @@ class _LoginScreenState extends State<LoginScreen> {
   var usernameController = TextEditingController();
   var passwordController = TextEditingController();
 
-  void login() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const HomePage()),
-    );
+  void login() async {
+    await DataStorage.instance.setLoggedIn(true);
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    }
   }
 
   @override

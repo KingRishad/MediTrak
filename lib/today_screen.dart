@@ -4,8 +4,13 @@ import 'add_medicine_screen.dart';
 
 class TodayScreen extends StatefulWidget {
   final List<Medicine> medicines;
+  final VoidCallback? onMedicinesChanged;
 
-  const TodayScreen({super.key, required this.medicines});
+  const TodayScreen({
+    super.key,
+    required this.medicines,
+    this.onMedicinesChanged,
+  });
 
   @override
   State<TodayScreen> createState() => _TodayScreenState();
@@ -40,6 +45,7 @@ class _TodayScreenState extends State<TodayScreen> {
       setState(() {
         widget.medicines.add(result);
       });
+      widget.onMedicinesChanged?.call();
     }
   }
 
@@ -47,6 +53,14 @@ class _TodayScreenState extends State<TodayScreen> {
     setState(() {
       widget.medicines[index].taken = !widget.medicines[index].taken;
     });
+    widget.onMedicinesChanged?.call();
+  }
+
+  void deleteMedicine(int index) {
+    setState(() {
+      widget.medicines.removeAt(index);
+    });
+    widget.onMedicinesChanged?.call();
   }
 
   @override
@@ -157,80 +171,97 @@ class _TodayScreenState extends State<TodayScreen> {
                       var med = widget.medicines[index];
                       Color iconColor = getFormColor(med.form);
 
-                      return Opacity(
-                        opacity: med.taken ? 0.5 : 1.0,
-                        child: Container(
+                      return Dismissible(
+                        key: ValueKey('${med.name}_${med.time}_$index'),
+                        direction: DismissDirection.endToStart,
+                        background: Container(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 20),
                           margin: const EdgeInsets.only(bottom: 10),
-                          padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Colors.red.shade400,
                             borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.05),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
                           ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  color: iconColor.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(12),
+                          child: const Icon(Icons.delete, color: Colors.white),
+                        ),
+                        onDismissed: (direction) {
+                          deleteMedicine(index);
+                        },
+                        child: Opacity(
+                          opacity: med.taken ? 0.5 : 1.0,
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.05),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
                                 ),
-                                child: Icon(
-                                  getFormIcon(med.form),
-                                  color: iconColor,
-                                  size: 24,
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: iconColor.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(
+                                    getFormIcon(med.form),
+                                    color: iconColor,
+                                    size: 24,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      med.name,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.blueGrey.shade900,
-                                        decoration: med.taken ? TextDecoration.lineThrough : TextDecoration.none,
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        med.name,
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.blueGrey.shade900,
+                                          decoration: med.taken ? TextDecoration.lineThrough : TextDecoration.none,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 3),
-                                    Text(
-                                      '${med.quantity}, ${med.frequency}',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[500],
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        '${med.quantity}, ${med.frequency}',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[500],
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                med.time,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey[500],
-                                  fontWeight: FontWeight.w500,
+                                Text(
+                                  med.time,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.grey[500],
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 10),
-                              GestureDetector(
-                                onTap: () => toggleTaken(index),
-                                child: Icon(
-                                  med.taken ? Icons.check_circle : Icons.check_circle_outline,
-                                  color: med.taken ? Colors.green : Colors.grey[400],
-                                  size: 28,
+                                const SizedBox(width: 10),
+                                GestureDetector(
+                                  onTap: () => toggleTaken(index),
+                                  child: Icon(
+                                    med.taken ? Icons.check_circle : Icons.check_circle_outline,
+                                    color: med.taken ? Colors.green : Colors.grey[400],
+                                    size: 28,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       );
