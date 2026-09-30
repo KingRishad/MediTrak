@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'data_storage.dart';
 import 'home_page.dart';
@@ -16,37 +17,117 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isSignUp = false;
   bool isLoading = false;
 
+  String _getFriendlyErrorMessage(dynamic e) {
+    if (e is FirebaseAuthException) {
+      switch (e.code) {
+        case 'invalid-email':
+        case 'invalid-email-address':
+          return 'Please enter a valid email address.';
+        case 'user-not-found':
+        case 'wrong-password':
+        case 'invalid-credential':
+          return 'Invalid email/password.';
+        case 'email-already-in-use':
+          return 'An account already exists with this email address.';
+        case 'weak-password':
+          return 'Password should be at least 6 characters.';
+        case 'user-disabled':
+          return 'This account has been disabled.';
+        case 'too-many-requests':
+          return 'Too many login attempts. Please try again later.';
+        case 'network-request-failed':
+          return 'Network error. Please check your connection.';
+        case 'operation-not-allowed':
+          return 'Email login is currently disabled.';
+        default:
+          final msg = (e.message ?? '').toLowerCase();
+          if (msg.contains('invalid email') || msg.contains('badly formatted')) {
+            return 'Please enter a valid email address.';
+          } else if (msg.contains('credential') || msg.contains('password') || msg.contains('user')) {
+            return 'Invalid email/password.';
+          }
+          return 'Invalid email/password.';
+      }
+    }
+
+    final errStr = e.toString().toLowerCase();
+    if (errStr.contains('invalid-email') || errStr.contains('invalid email') || errStr.contains('badly formatted')) {
+      return 'Please enter a valid email address.';
+    } else if (errStr.contains('wrong-password') ||
+        errStr.contains('user-not-found') ||
+        errStr.contains('invalid-credential') ||
+        errStr.contains('invalid email/password')) {
+      return 'Invalid email/password.';
+    } else if (errStr.contains('email-already-in-use')) {
+      return 'An account already exists with this email address.';
+    } else if (errStr.contains('weak-password')) {
+      return 'Password should be at least 6 characters.';
+    } else if (errStr.contains('network')) {
+      return 'Network error. Please check your internet connection.';
+    }
+
+    return 'Invalid email/password.';
+  }
+
   Future<void> login() async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
+
+    final firebaseStorage = DataStorage.firebaseInstance;
+
+    if (firebaseStorage != null) {
+      if (email.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please enter a valid email address.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+      if (!emailRegex.hasMatch(email)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please enter a valid email address.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      if (password.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please enter your password.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      if (isSignUp && password.length < 6) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Password should be at least 6 characters.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+    }
 
     setState(() {
       isLoading = true;
     });
 
     try {
-      final firebaseStorage = DataStorage.firebaseInstance;
-
       if (firebaseStorage != null) {
-        if (email.isNotEmpty && password.isNotEmpty) {
-          if (isSignUp) {
-            await firebaseStorage.signUpWithEmail(email, password);
-          } else {
-            await firebaseStorage.signInWithEmail(email, password);
-          }
-        } else if (email.isNotEmpty && password.isEmpty) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Please enter your password.'),
-                backgroundColor: Colors.orange,
-              ),
-            );
-          }
-          return;
+        if (isSignUp) {
+          await firebaseStorage.signUpWithEmail(email, password);
         } else {
-          // Sign in anonymously if email field is left blank
-          await firebaseStorage.signInAnonymously();
+          await firebaseStorage.signInWithEmail(email, password);
         }
       } else {
         // Fallback local login
@@ -77,7 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Authentication failed: ${e.toString().replaceAll(RegExp(r'\[.*?\]'), '').trim()}'),
+            content: Text(_getFriendlyErrorMessage(e)),
             backgroundColor: Colors.red.shade400,
           ),
         );
