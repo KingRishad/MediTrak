@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'data_storage.dart';
 import 'login_screen.dart';
 import 'user_profile.dart';
@@ -40,119 +41,183 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final nameController = TextEditingController(text: userProfile!.name);
     final ageController = TextEditingController(text: userProfile!.age);
-    final bloodGroupController = TextEditingController(text: userProfile!.bloodGroup);
     final heightController = TextEditingController(text: userProfile!.height);
     final weightController = TextEditingController(text: userProfile!.weight);
     final allergiesController = TextEditingController(text: userProfile!.allergies);
     final emergencyContactController =
         TextEditingController(text: userProfile!.emergencyContact);
 
+    final bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+    String selectedBloodGroup = bloodGroups.contains(userProfile!.bloodGroup)
+        ? userProfile!.bloodGroup
+        : 'B+';
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return Container(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 20,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          ),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Edit Profile Information',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blueGrey.shade900,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _buildTextField('Full Name', nameController, Icons.person_outline),
-                _buildTextField('Age', ageController, Icons.cake_outlined, keyboardType: TextInputType.number),
-                _buildTextField('Blood Group', bloodGroupController, Icons.bloodtype_outlined),
-                _buildTextField('Height', heightController, Icons.height),
-                _buildTextField('Weight', weightController, Icons.monitor_weight_outlined),
-                _buildTextField('Allergies', allergiesController, Icons.warning_amber_rounded),
-                _buildTextField('Emergency Contact', emergencyContactController, Icons.phone_outlined, keyboardType: TextInputType.phone),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      final updated = userProfile!.copyWith(
-                        name: nameController.text.trim(),
-                        age: ageController.text.trim(),
-                        bloodGroup: bloodGroupController.text.trim(),
-                        height: heightController.text.trim(),
-                        weight: weightController.text.trim(),
-                        allergies: allergiesController.text.trim(),
-                        emergencyContact: emergencyContactController.text.trim(),
-                      );
-
-                      final navigator = Navigator.of(context);
-                      final messenger = ScaffoldMessenger.of(context);
-
-                      navigator.pop();
-
-                      setState(() {
-                        isLoading = true;
-                      });
-
-                      await DataStorage.instance.saveUserProfile(updated);
-                      await _loadProfile();
-
-                      if (mounted) {
-                        messenger.showSnackBar(
-                          const SnackBar(
-                            content: Text('Changes Saved'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
+        return StatefulBuilder(
+          builder: (context, setBottomSheetState) {
+            return Container(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
                     ),
-                    child: const Text(
-                      'Save Changes',
+                    const SizedBox(height: 16),
+                    Text(
+                      'Edit Profile Information',
                       style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blueGrey.shade900,
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    _buildTextField('Full Name', nameController, Icons.person_outline),
+                    _buildTextField(
+                      'Age',
+                      ageController,
+                      Icons.cake_outlined,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false),
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    ),
+                    _buildDropdownField(
+                      'Blood Group',
+                      selectedBloodGroup,
+                      bloodGroups,
+                      Icons.bloodtype_outlined,
+                      (val) {
+                        if (val != null) {
+                          setBottomSheetState(() {
+                            selectedBloodGroup = val;
+                          });
+                        }
+                      },
+                    ),
+                    _buildTextField('Height', heightController, Icons.height),
+                    _buildTextField('Weight', weightController, Icons.monitor_weight_outlined),
+                    _buildTextField('Allergies', allergiesController, Icons.warning_amber_rounded),
+                    _buildTextField('Emergency Contact', emergencyContactController, Icons.phone_outlined, keyboardType: TextInputType.phone),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final updated = userProfile!.copyWith(
+                            name: nameController.text.trim(),
+                            age: ageController.text.trim(),
+                            bloodGroup: selectedBloodGroup,
+                            height: heightController.text.trim(),
+                            weight: weightController.text.trim(),
+                            allergies: allergiesController.text.trim(),
+                            emergencyContact: emergencyContactController.text.trim(),
+                          );
+
+                          final navigator = Navigator.of(context);
+                          final messenger = ScaffoldMessenger.of(context);
+
+                          navigator.pop();
+
+                          setState(() {
+                            isLoading = true;
+                          });
+
+                          await DataStorage.instance.saveUserProfile(updated);
+                          await _loadProfile();
+
+                          if (mounted) {
+                            messenger.showSnackBar(
+                              const SnackBar(
+                                content: Text('Changes Saved'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                        ),
+                        child: const Text(
+                          'Save Changes',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
+    );
+  }
+
+  Widget _buildDropdownField(
+    String label,
+    String currentValue,
+    List<String> items,
+    IconData icon,
+    ValueChanged<String?> onChanged,
+  ) {
+    final validValue = items.contains(currentValue) ? currentValue : items.first;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: DropdownButtonFormField<String>(
+        initialValue: validValue,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(icon, color: Colors.blue),
+          filled: true,
+          fillColor: Colors.grey.shade50,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+        ),
+        items: items.map((bg) {
+          return DropdownMenuItem<String>(
+            value: bg,
+            child: Text(bg),
+          );
+        }).toList(),
+        onChanged: onChanged,
+      ),
     );
   }
 
@@ -161,12 +226,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     TextEditingController controller,
     IconData icon, {
     TextInputType keyboardType = TextInputType.text,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon, color: Colors.blue),
