@@ -2,7 +2,6 @@ import 'data_storage.dart';
 import 'main.dart';
 import 'user_profile.dart';
 
-/// Legacy helper class that delegates calls to [DataStorage.instance].
 class MedicineStorage {
   static Future<bool> isLoggedIn() => DataStorage.instance.isLoggedIn();
 

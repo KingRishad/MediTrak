@@ -130,7 +130,6 @@ class _LoginScreenState extends State<LoginScreen> {
           await firebaseStorage.signInWithEmail(email, password);
         }
       } else {
-        // Fallback local login
         if (email.isNotEmpty) {
           final existing = await DataStorage.instance.getUserProfile();
           final updated = (existing ??

@@ -13,7 +13,6 @@ void main() async {
     DataStorage.instance = FirebaseStorageService();
   } catch (e) {
     debugPrint('Firebase initialization info: $e');
-    // Fallback to LocalStorageService remains active if Firebase is not yet configured
   }
 
   runApp(const MediTrack());

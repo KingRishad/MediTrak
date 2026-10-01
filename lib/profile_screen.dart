@@ -5,7 +5,7 @@ import 'login_screen.dart';
 import 'user_profile.dart';
 
 class HeightData {
-  String unit; // 'ft' or 'cm'
+  String unit;
   String feet;
   String inches;
   String cm;
@@ -49,7 +49,7 @@ class HeightData {
 }
 
 class WeightData {
-  String unit; // 'kg' or 'lbs'
+  String unit;
   String value;
 
   WeightData({required this.unit, required this.value});

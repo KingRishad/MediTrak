@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Data model representing user account login info and profile details.
 class UserProfile {
   final String uid;
   final String email;

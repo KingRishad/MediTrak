@@ -5,7 +5,6 @@ import 'main.dart';
 import 'storage_service.dart';
 import 'user_profile.dart';
 
-/// SharedPreferences implementation of [StorageService].
 class LocalStorageService implements StorageService {
   static const String _keyMedicines = 'saved_medicines';
   static const String _keyLastDate = 'last_date';
@@ -28,7 +27,6 @@ class LocalStorageService implements StorageService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyIsLoggedIn, loggedIn);
     if (!loggedIn) {
-      // Clear profile cache on logout
       await prefs.remove(_keyUserProfile);
     }
   }
@@ -50,7 +48,6 @@ class LocalStorageService implements StorageService {
           .map((item) => Medicine.fromJson(item as Map<String, dynamic>))
           .toList();
 
-      // Reset 'taken' status if launching on a new day
       if (lastDate != null && lastDate != today) {
         for (var med in medicines) {
           med.taken = false;
