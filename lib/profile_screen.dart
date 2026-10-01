@@ -48,6 +48,27 @@ class HeightData {
   }
 }
 
+class WeightData {
+  String unit; // 'kg' or 'lbs'
+  String value;
+
+  WeightData({required this.unit, required this.value});
+
+  factory WeightData.parse(String raw) {
+    final str = raw.trim();
+    if (str.toLowerCase().contains('lbs') || str.toLowerCase().contains('lb')) {
+      final digits = RegExp(r'[\d.]+').firstMatch(str)?.group(0) ?? '';
+      return WeightData(unit: 'lbs', value: digits.isNotEmpty ? digits : '160');
+    } else if (str.toLowerCase().contains('kg')) {
+      final digits = RegExp(r'[\d.]+').firstMatch(str)?.group(0) ?? '';
+      return WeightData(unit: 'kg', value: digits.isNotEmpty ? digits : '72');
+    } else if (RegExp(r'^[\d.]+$').hasMatch(str)) {
+      return WeightData(unit: 'kg', value: str);
+    }
+    return WeightData(unit: 'kg', value: '72');
+  }
+}
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -85,7 +106,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final nameController = TextEditingController(text: userProfile!.name);
     final ageController = TextEditingController(text: userProfile!.age);
-    final weightController = TextEditingController(text: userProfile!.weight);
     final allergiesController = TextEditingController(text: userProfile!.allergies);
     final emergencyContactController =
         TextEditingController(text: userProfile!.emergencyContact);
@@ -100,6 +120,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final feetController = TextEditingController(text: heightData.feet);
     final inchesController = TextEditingController(text: heightData.inches);
     final cmController = TextEditingController(text: heightData.cm);
+
+    final weightData = WeightData.parse(userProfile!.weight);
+    String selectedWeightUnit = weightData.unit;
+    final weightController = TextEditingController(text: weightData.value);
 
     showModalBottomSheet(
       context: context,
@@ -218,7 +242,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ],
                     ),
-                    _buildTextField('Weight', weightController, Icons.monitor_weight_outlined),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _buildTextField(
+                            'Weight',
+                            weightController,
+                            Icons.monitor_weight_outlined,
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          width: 80,
+                          child: _buildDropdownField(
+                            'Unit',
+                            selectedWeightUnit,
+                            ['kg', 'lbs'],
+                            null,
+                            (val) {
+                              if (val != null) {
+                                setBottomSheetState(() {
+                                  selectedWeightUnit = val;
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                     _buildTextField('Allergies', allergiesController, Icons.warning_amber_rounded),
                     _buildTextField('Emergency Contact', emergencyContactController, Icons.phone_outlined, keyboardType: TextInputType.phone),
                     const SizedBox(height: 20),
@@ -243,12 +299,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             }
                           }
 
+                          final String formattedWeight;
+                          final weightVal = weightController.text.trim();
+                          if (weightVal.isNotEmpty) {
+                            formattedWeight = '$weightVal $selectedWeightUnit';
+                          } else {
+                            formattedWeight = '';
+                          }
+
                           final updated = userProfile!.copyWith(
                             name: nameController.text.trim(),
                             age: ageController.text.trim(),
                             bloodGroup: selectedBloodGroup,
                             height: formattedHeight,
-                            weight: weightController.text.trim(),
+                            weight: formattedWeight,
                             allergies: allergiesController.text.trim(),
                             emergencyContact: emergencyContactController.text.trim(),
                           );
