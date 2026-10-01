@@ -51,48 +51,127 @@ class FirebaseStorageService implements StorageService {
       final nowIso = DateTime.now().toIso8601String();
       final userDocRef = _firestore.collection('users').doc(user.uid);
 
-      final Map<String, dynamic> dataToUpdate = {
-        'uid': user.uid,
-        'email': user.email ?? 'Anonymous',
-        'lastLogin': FieldValue.serverTimestamp(),
-        'lastLoginIso': nowIso,
-        'updatedAt': FieldValue.serverTimestamp(),
-      };
-
       if (isNewUser) {
-        dataToUpdate['createdAt'] = FieldValue.serverTimestamp();
-        dataToUpdate['createdAtIso'] = nowIso;
-        dataToUpdate['name'] = user.email != null && user.email!.contains('@')
+        final defaultName = user.email != null && user.email!.contains('@')
             ? user.email!.split('@').first
             : 'User';
-        dataToUpdate['age'] = '24';
-        dataToUpdate['bloodGroup'] = 'B+';
-        dataToUpdate['height'] = "5' 9\"";
-        dataToUpdate['weight'] = '72 kg';
-        dataToUpdate['allergies'] = 'None';
-        dataToUpdate['emergencyContact'] = '+880 1712 345678';
+
+        final Map<String, dynamic> dataToUpdate = {
+          'uid': user.uid,
+          'email': user.email ?? 'Anonymous',
+          'name': defaultName,
+          'age': '',
+          'bloodGroup': '',
+          'height': '',
+          'weight': '',
+          'allergies': '',
+          'emergencyContact': '',
+          'lastLogin': FieldValue.serverTimestamp(),
+          'lastLoginIso': nowIso,
+          'createdAt': FieldValue.serverTimestamp(),
+          'createdAtIso': nowIso,
+          'updatedAt': FieldValue.serverTimestamp(),
+        };
+
+        await userDocRef
+            .set(dataToUpdate, SetOptions(merge: true))
+            .timeout(const Duration(seconds: 4));
+
+        final profile = UserProfile(
+          uid: user.uid,
+          email: user.email ?? 'Anonymous',
+          name: defaultName,
+          age: '',
+          bloodGroup: '',
+          height: '',
+          weight: '',
+          allergies: '',
+          emergencyContact: '',
+          lastLogin: nowIso,
+          createdAt: nowIso,
+        );
+        await _localStorage.saveUserProfile(profile);
+      } else {
+        // Existing user logging in: fetch current Firestore document first to preserve synced profile info
+        final docSnapshot = await userDocRef.get().timeout(const Duration(seconds: 4));
+
+        if (docSnapshot.exists && docSnapshot.data() != null) {
+          final data = docSnapshot.data()!;
+
+          // Update last login timestamp in server
+          await userDocRef.set({
+            'uid': user.uid,
+            'email': user.email ?? 'Anonymous',
+            'lastLogin': FieldValue.serverTimestamp(),
+            'lastLoginIso': nowIso,
+            'updatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true)).timeout(const Duration(seconds: 4));
+
+          String formatTimestamp(dynamic val, String fallbackIso) {
+            if (val is Timestamp) {
+              return val.toDate().toIso8601String();
+            } else if (val is String && val.isNotEmpty) {
+              return val;
+            }
+            return fallbackIso;
+          }
+
+          final createdAtStr = formatTimestamp(data['createdAt'], data['createdAtIso'] as String? ?? nowIso);
+
+          final profile = UserProfile.fromJson(
+            data,
+            defaultUid: user.uid,
+            defaultEmail: user.email ?? 'Anonymous',
+          ).copyWith(
+            lastLogin: nowIso,
+            createdAt: createdAtStr,
+          );
+
+          // Update local cache with remote user profile
+          await _localStorage.saveUserProfile(profile);
+        } else {
+          // Document does not exist on server yet, initialize profile
+          final defaultName = user.email != null && user.email!.contains('@')
+              ? user.email!.split('@').first
+              : 'User';
+
+          final Map<String, dynamic> dataToUpdate = {
+            'uid': user.uid,
+            'email': user.email ?? 'Anonymous',
+            'name': defaultName,
+            'age': '',
+            'bloodGroup': '',
+            'height': '',
+            'weight': '',
+            'allergies': '',
+            'emergencyContact': '',
+            'lastLogin': FieldValue.serverTimestamp(),
+            'lastLoginIso': nowIso,
+            'createdAt': FieldValue.serverTimestamp(),
+            'createdAtIso': nowIso,
+            'updatedAt': FieldValue.serverTimestamp(),
+          };
+
+          await userDocRef
+              .set(dataToUpdate, SetOptions(merge: true))
+              .timeout(const Duration(seconds: 4));
+
+          final profile = UserProfile(
+            uid: user.uid,
+            email: user.email ?? 'Anonymous',
+            name: defaultName,
+            age: '',
+            bloodGroup: '',
+            height: '',
+            weight: '',
+            allergies: '',
+            emergencyContact: '',
+            lastLogin: nowIso,
+            createdAt: nowIso,
+          );
+          await _localStorage.saveUserProfile(profile);
+        }
       }
-
-      // 3-second timeout prevents network/permission delays from blocking authentication
-      await userDocRef
-          .set(dataToUpdate, SetOptions(merge: true))
-          .timeout(const Duration(seconds: 3));
-
-      // Update local profile cache immediately
-      final profile = UserProfile(
-        uid: user.uid,
-        email: user.email ?? 'Anonymous',
-        name: user.email != null && user.email!.contains('@') ? user.email!.split('@').first : 'User',
-        age: '24',
-        bloodGroup: 'B+',
-        height: "5' 9\"",
-        weight: '72 kg',
-        allergies: 'None',
-        emergencyContact: '+880 1712 345678',
-        lastLogin: nowIso,
-        createdAt: nowIso,
-      );
-      await _localStorage.saveUserProfile(profile);
     } catch (e) {
       if (kDebugMode) {
         print('Background Firestore server sync warning/timeout: $e');
@@ -182,16 +261,19 @@ class FirebaseStorageService implements StorageService {
 
       if (!docSnapshot.exists || docSnapshot.data() == null) {
         // Fallback or new profile
+        final defaultName = user.email != null && user.email!.contains('@')
+            ? user.email!.split('@').first
+            : 'User';
         final defaultProfile = UserProfile(
           uid: user.uid,
           email: user.email ?? 'Anonymous',
-          name: user.email != null && user.email!.contains('@') ? user.email!.split('@').first : 'User',
-          age: '24',
-          bloodGroup: 'B+',
-          height: "5' 9\"",
-          weight: '72 kg',
-          allergies: 'None',
-          emergencyContact: '+880 1712 345678',
+          name: defaultName,
+          age: '',
+          bloodGroup: '',
+          height: '',
+          weight: '',
+          allergies: '',
+          emergencyContact: '',
           lastLogin: DateTime.now().toIso8601String(),
           createdAt: DateTime.now().toIso8601String(),
         );
