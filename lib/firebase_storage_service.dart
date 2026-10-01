@@ -75,7 +75,7 @@ class FirebaseStorageService implements StorageService {
 
         await userDocRef
             .set(dataToUpdate, SetOptions(merge: true))
-            .timeout(const Duration(seconds: 4));
+            .timeout(const Duration(seconds: 10));
 
         final profile = UserProfile(
           uid: user.uid,
@@ -92,8 +92,8 @@ class FirebaseStorageService implements StorageService {
         );
         await _localStorage.saveUserProfile(profile);
       } else {
-        // Existing user logging in: fetch current Firestore document first to preserve synced profile info
-        final docSnapshot = await userDocRef.get().timeout(const Duration(seconds: 4));
+        // Existing user logging in: fetch current Firestore document first to preserve synced profile info & medicines
+        final docSnapshot = await userDocRef.get().timeout(const Duration(seconds: 10));
 
         if (docSnapshot.exists && docSnapshot.data() != null) {
           final data = docSnapshot.data()!;
@@ -105,7 +105,7 @@ class FirebaseStorageService implements StorageService {
             'lastLogin': FieldValue.serverTimestamp(),
             'lastLoginIso': nowIso,
             'updatedAt': FieldValue.serverTimestamp(),
-          }, SetOptions(merge: true)).timeout(const Duration(seconds: 4));
+          }, SetOptions(merge: true)).timeout(const Duration(seconds: 10));
 
           String formatTimestamp(dynamic val, String fallbackIso) {
             if (val is Timestamp) {
@@ -129,6 +129,13 @@ class FirebaseStorageService implements StorageService {
 
           // Update local cache with remote user profile
           await _localStorage.saveUserProfile(profile);
+
+          // Update local cache with remote user medicines
+          final List<dynamic> jsonList = data['medicines'] as List<dynamic>? ?? [];
+          final medicines = jsonList
+              .map((item) => Medicine.fromJson(Map<String, dynamic>.from(item as Map)))
+              .toList();
+          await _localStorage.saveMedicines(medicines);
         } else {
           // Document does not exist on server yet, initialize profile
           final defaultName = user.email != null && user.email!.contains('@')
@@ -154,7 +161,7 @@ class FirebaseStorageService implements StorageService {
 
           await userDocRef
               .set(dataToUpdate, SetOptions(merge: true))
-              .timeout(const Duration(seconds: 4));
+              .timeout(const Duration(seconds: 10));
 
           final profile = UserProfile(
             uid: user.uid,
@@ -252,12 +259,12 @@ class FirebaseStorageService implements StorageService {
     }
 
     try {
-      // Pull login & user profile info from Cloud Firestore server (4s timeout)
+      // Pull login & user profile info from Cloud Firestore server
       final docSnapshot = await _firestore
           .collection('users')
           .doc(user.uid)
           .get()
-          .timeout(const Duration(seconds: 4));
+          .timeout(const Duration(seconds: 10));
 
       if (!docSnapshot.exists || docSnapshot.data() == null) {
         // Fallback or new profile
@@ -342,7 +349,7 @@ class FirebaseStorageService implements StorageService {
           'updatedAt': FieldValue.serverTimestamp(),
         },
         SetOptions(merge: true),
-      ).timeout(const Duration(seconds: 4));
+      ).timeout(const Duration(seconds: 10));
     } catch (e) {
       if (kDebugMode) {
         print('Error saving user profile to Firestore server: $e');
@@ -367,12 +374,10 @@ class FirebaseStorageService implements StorageService {
           .collection('users')
           .doc(user.uid)
           .get()
-          .timeout(const Duration(seconds: 4));
+          .timeout(const Duration(seconds: 10));
 
       if (!docSnapshot.exists || docSnapshot.data() == null) {
-        // New account on Firebase without medical data
-        await _localStorage.saveMedicines([]);
-        return [];
+        return await _localStorage.loadMedicines();
       }
 
       final data = docSnapshot.data()!;
@@ -427,7 +432,7 @@ class FirebaseStorageService implements StorageService {
           'updatedAt': FieldValue.serverTimestamp(),
         },
         SetOptions(merge: true),
-      ).timeout(const Duration(seconds: 4));
+      ).timeout(const Duration(seconds: 10));
     } catch (e) {
       if (kDebugMode) {
         print('Error saving medicines to Firestore server: $e');
