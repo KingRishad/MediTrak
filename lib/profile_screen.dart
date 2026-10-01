@@ -35,16 +35,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  String _formatDate(String isoString) {
-    if (isoString.isEmpty) return 'N/A';
-    try {
-      final dateTime = DateTime.parse(isoString).toLocal();
-      return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-    } catch (_) {
-      return isoString;
-    }
-  }
-
   void _openEditProfileDialog() {
     if (userProfile == null) return;
 
@@ -135,12 +125,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       if (mounted) {
                         messenger.showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              DataStorage.isFirebase
-                                  ? 'Profile saved and synced to Firebase server!'
-                                  : 'Profile saved locally!',
-                            ),
+                          const SnackBar(
+                            content: Text('Changes Saved'),
                             backgroundColor: Colors.green,
                           ),
                         );
@@ -245,7 +231,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Your health profile & login info',
+                        'Your health profile',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey[500],
@@ -259,38 +245,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     tooltip: 'Edit Profile',
                   ),
                 ],
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: DataStorage.isFirebase ? Colors.green.shade50 : Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: DataStorage.isFirebase ? Colors.green.shade200 : Colors.blue.shade200,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      DataStorage.isFirebase ? Icons.cloud_done : Icons.storage,
-                      size: 18,
-                      color: DataStorage.isFirebase ? Colors.green.shade700 : Colors.blue.shade700,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      DataStorage.isFirebase
-                          ? 'Synced with Firebase Server'
-                          : 'Local Storage Mode',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: DataStorage.isFirebase ? Colors.green.shade800 : Colors.blue.shade800,
-                      ),
-                    ),
-                  ],
-                ),
               ),
               const SizedBox(height: 20),
               Center(
@@ -317,40 +271,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         color: Colors.blueGrey.shade900,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      profile.email,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                    ),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
-              Text(
-                'Server Login Info',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blueGrey.shade800,
-                ),
-              ),
-              const SizedBox(height: 10),
-              buildInfoCard(Icons.email_outlined, 'Account Email', profile.email),
-              buildInfoCard(
-                Icons.fingerprint,
-                'User ID (UID)',
-                profile.uid.length > 20 ? '${profile.uid.substring(0, 18)}...' : profile.uid,
-              ),
-              if (profile.lastLogin.isNotEmpty)
-                buildInfoCard(
-                  Icons.access_time_rounded,
-                  'Last Server Login',
-                  _formatDate(profile.lastLogin),
-                ),
-              const SizedBox(height: 20),
               Text(
                 'Health Details',
                 style: TextStyle(
@@ -360,6 +284,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 10),
+              buildInfoCard(Icons.email_outlined, 'Email', profile.email),
               buildInfoCard(Icons.cake_outlined, 'Age', profile.age.isNotEmpty ? profile.age : 'Not specified'),
               buildInfoCard(Icons.bloodtype_outlined, 'Blood Group', profile.bloodGroup.isNotEmpty ? profile.bloodGroup : 'Not specified'),
               buildInfoCard(Icons.height, 'Height', profile.height.isNotEmpty ? profile.height : 'Not specified'),
