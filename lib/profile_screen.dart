@@ -4,6 +4,50 @@ import 'data_storage.dart';
 import 'login_screen.dart';
 import 'user_profile.dart';
 
+class HeightData {
+  String unit; // 'ft' or 'cm'
+  String feet;
+  String inches;
+  String cm;
+
+  HeightData({
+    required this.unit,
+    required this.feet,
+    required this.inches,
+    required this.cm,
+  });
+
+  factory HeightData.parse(String raw) {
+    final str = raw.trim();
+    if (str.toLowerCase().contains('cm')) {
+      final digits = RegExp(r'\d+').firstMatch(str)?.group(0) ?? '';
+      return HeightData(
+        unit: 'cm',
+        feet: '5',
+        inches: '9',
+        cm: digits.isNotEmpty ? digits : '175',
+      );
+    }
+
+    if (str.contains("'") ||
+        str.contains('"') ||
+        str.toLowerCase().contains('ft') ||
+        str.toLowerCase().contains('in')) {
+      final matches =
+          RegExp(r'\d+').allMatches(str).map((m) => m.group(0)!).toList();
+      final ft = matches.isNotEmpty ? matches[0] : '5';
+      final inch = matches.length > 1 ? matches[1] : '0';
+      return HeightData(unit: 'ft', feet: ft, inches: inch, cm: '175');
+    }
+
+    if (RegExp(r'^\d+$').hasMatch(str)) {
+      return HeightData(unit: 'cm', feet: '5', inches: '9', cm: str);
+    }
+
+    return HeightData(unit: 'ft', feet: '5', inches: '9', cm: '175');
+  }
+}
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -41,7 +85,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final nameController = TextEditingController(text: userProfile!.name);
     final ageController = TextEditingController(text: userProfile!.age);
-    final heightController = TextEditingController(text: userProfile!.height);
     final weightController = TextEditingController(text: userProfile!.weight);
     final allergiesController = TextEditingController(text: userProfile!.allergies);
     final emergencyContactController =
@@ -51,6 +94,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     String selectedBloodGroup = bloodGroups.contains(userProfile!.bloodGroup)
         ? userProfile!.bloodGroup
         : 'B+';
+
+    final heightData = HeightData.parse(userProfile!.height);
+    String selectedHeightUnit = heightData.unit;
+    final feetController = TextEditingController(text: heightData.feet);
+    final inchesController = TextEditingController(text: heightData.inches);
+    final cmController = TextEditingController(text: heightData.cm);
 
     showModalBottomSheet(
       context: context,
@@ -116,7 +165,59 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         }
                       },
                     ),
-                    _buildTextField('Height', heightController, Icons.height),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (selectedHeightUnit == 'ft') ...[
+                          Expanded(
+                            child: _buildTextField(
+                              'Feet',
+                              feetController,
+                              Icons.height,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false),
+                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildTextField(
+                              'Inches',
+                              inchesController,
+                              Icons.straighten,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false),
+                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                            ),
+                          ),
+                        ] else ...[
+                          Expanded(
+                            child: _buildTextField(
+                              'Height (cm)',
+                              cmController,
+                              Icons.height,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false),
+                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                            ),
+                          ),
+                        ],
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          width: 80,
+                          child: _buildDropdownField(
+                            'Unit',
+                            selectedHeightUnit,
+                            ['ft', 'cm'],
+                            null,
+                            (val) {
+                              if (val != null) {
+                                setBottomSheetState(() {
+                                  selectedHeightUnit = val;
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                     _buildTextField('Weight', weightController, Icons.monitor_weight_outlined),
                     _buildTextField('Allergies', allergiesController, Icons.warning_amber_rounded),
                     _buildTextField('Emergency Contact', emergencyContactController, Icons.phone_outlined, keyboardType: TextInputType.phone),
@@ -126,11 +227,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       height: 48,
                       child: ElevatedButton(
                         onPressed: () async {
+                          final String formattedHeight;
+                          if (selectedHeightUnit == 'cm') {
+                            final cmVal = cmController.text.trim();
+                            formattedHeight = cmVal.isNotEmpty ? '$cmVal cm' : '';
+                          } else {
+                            final feetVal = feetController.text.trim();
+                            final inchesVal = inchesController.text.trim();
+                            if (feetVal.isNotEmpty || inchesVal.isNotEmpty) {
+                              final ftStr = feetVal.isNotEmpty ? feetVal : '0';
+                              final inStr = inchesVal.isNotEmpty ? inchesVal : '0';
+                              formattedHeight = "$ftStr' $inStr\"";
+                            } else {
+                              formattedHeight = '';
+                            }
+                          }
+
                           final updated = userProfile!.copyWith(
                             name: nameController.text.trim(),
                             age: ageController.text.trim(),
                             bloodGroup: selectedBloodGroup,
-                            height: heightController.text.trim(),
+                            height: formattedHeight,
                             weight: weightController.text.trim(),
                             allergies: allergiesController.text.trim(),
                             emergencyContact: emergencyContactController.text.trim(),
@@ -187,7 +304,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     String label,
     String currentValue,
     List<String> items,
-    IconData icon,
+    IconData? icon,
     ValueChanged<String?> onChanged,
   ) {
     final validValue = items.contains(currentValue) ? currentValue : items.first;
@@ -198,9 +315,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         initialValue: validValue,
         decoration: InputDecoration(
           labelText: label,
-          prefixIcon: Icon(icon, color: Colors.blue),
+          prefixIcon: icon != null ? Icon(icon, color: Colors.blue) : null,
           filled: true,
           fillColor: Colors.grey.shade50,
+          contentPadding: icon == null
+              ? const EdgeInsets.symmetric(horizontal: 10, vertical: 15)
+              : null,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(color: Colors.grey[300]!),
