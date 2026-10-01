@@ -10,15 +10,21 @@ class AddMedicineScreen extends StatefulWidget {
 
 class _AddMedicineScreenState extends State<AddMedicineScreen> {
   var nameController = TextEditingController();
+  var doseController = TextEditingController();
   String selectedForm = 'Tablet';
   String selectedQuantity = '2 pills';
-  String selectedDose = '250 mg';
   String selectedFrequency = 'Everyday';
   TimeOfDay selectedTime = const TimeOfDay(hour: 10, minute: 0);
 
   List<String> quantityOptions = ['1 pill', '2 pills', '3 pills', '4 pills', '5 pills'];
-  List<String> doseOptions = ['100 mg', '150 mg', '200 mg', '250 mg', '500 mg', '1000 mg'];
   List<String> frequencyOptions = ['Everyday', 'Once a week', 'Twice a week', 'Every other day'];
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    doseController.dispose();
+    super.dispose();
+  }
 
   IconData getFormIcon(String form) {
     if (form == 'Tablet') return Icons.medication;
@@ -61,7 +67,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
       name: nameController.text.trim(),
       form: selectedForm,
       quantity: selectedQuantity,
-      dose: selectedDose,
+      dose: doseController.text.trim(),
       frequency: selectedFrequency,
       time: formatTime(selectedTime),
     );
@@ -232,34 +238,33 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Dose',
+                        'Dose(mg)',
                         style: TextStyle(fontSize: 14, color: Colors.grey[600], fontWeight: FontWeight.w500),
                       ),
                       const SizedBox(height: 8),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: selectedDose,
-                            isExpanded: true,
-                            icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey[500]),
-                            style: TextStyle(fontSize: 16, color: Colors.blueGrey.shade900),
-                            items: List.generate(doseOptions.length, (i) {
-                              return DropdownMenuItem<String>(
-                                value: doseOptions[i],
-                                child: Text(doseOptions[i]),
-                              );
-                            }),
-                            onChanged: (newValue) {
-                              if (newValue != null) {
-                                setState(() {
-                                  selectedDose = newValue;
-                                });
-                              }
-                            },
+                      TextField(
+                        controller: doseController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          hintText: 'Enter dose',
+                          hintStyle: TextStyle(color: Colors.grey[400]),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey[300]!),
                           ),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey[300]!),
+                          ),
+                          focusedBorder: const UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blue),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
+                        ),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.blueGrey.shade900,
                         ),
                       ),
                     ],
